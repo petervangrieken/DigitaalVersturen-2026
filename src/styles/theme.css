@@ -1,0 +1,25 @@
+/*
+ * Minimal Tailwind base layer.
+ * All design tokens come from @design-system/tokens (--stamp-* variables).
+ * Tailwind is kept for layout utilities only (flex, grid, spacing, etc.).
+ */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--stamp-text-body-m-default-font-family, sans-serif);
+    color: var(--stamp-color-text-default, #1a1a1a);
+    background: var(--stamp-color-background-surface, #ffffff);
+  }
+}
+
+/* Hide Stamp's skip-navigation link — not applicable in this embedded app */
+.stamp-skip-links,
+.stamp-skip-link,
+a.stamp-skip-link {
+  display: none !important;
+}
