@@ -2,6 +2,8 @@
 
 Bij `docs/toegankelijkheidsanalyse-2026-08.md`. Elke prompt is zelfstandig: kopieer hem los in een AI-codeersessie, ook als die sessie de rest van het rapport niet kent.
 
+Voor de ernstige en matige bevindingen (E1–E10, M1–M14): zie `docs/prompts-overige-bevindingen.md`. Vier onderwerpen overlappen met de prompts hieronder — dat document bevat de overlaptabel.
+
 **Volgorde.** B0 eerst — zonder die fix bouwt de app niet en kun je niets verifiëren. Daarna B1, B2, B3 (de chat hoorbaar maken), dan B4, dan B5/B6, dan B7/B8. Twee koppelingen: B1 en B2 vormen samen één ontwerp (B1 onderdrukt aankondigingsruis tijdens streamen, B2 dekt de stilte die daardoor ontstaat af) — voer B1 vóór B2 uit en lever ze samen op. B4 en B7 raken dezelfde bestanden; voer ze niet parallel uit.
 
 **Verificatie.** Geen van deze fixes is af zonder een echte screenreadercontrole. Draai NVDA (Windows) of VoiceOver (macOS: Cmd+F5) en loop de flow door. Een axe-scan vindt B5 en B6, maar mist B1, B3, B7 en B8 volledig — die gaan over gedrag in de tijd, niet over de DOM op één moment.
