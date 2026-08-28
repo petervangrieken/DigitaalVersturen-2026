@@ -2,7 +2,7 @@
 
 Bij `docs/toegankelijkheidsanalyse-2026-08.md`. Elke prompt is zelfstandig: kopieer hem los in een AI-codeersessie, ook als die sessie de rest van het rapport niet kent.
 
-**Volgorde.** B0 eerst — zonder die fix bouwt de app niet en kun je niets verifiëren. Daarna B1, B2, B3 (de chat hoorbaar maken), dan B4, dan B5/B6, dan B7/B8. B4 en B7 raken dezelfde bestanden; voer ze niet parallel uit.
+**Volgorde.** B0 eerst — zonder die fix bouwt de app niet en kun je niets verifiëren. Daarna B1, B2, B3 (de chat hoorbaar maken), dan B4, dan B5/B6, dan B7/B8. Twee koppelingen: B1 en B2 vormen samen één ontwerp (B1 onderdrukt aankondigingsruis tijdens streamen, B2 dekt de stilte die daardoor ontstaat af) — voer B1 vóór B2 uit en lever ze samen op. B4 en B7 raken dezelfde bestanden; voer ze niet parallel uit.
 
 **Verificatie.** Geen van deze fixes is af zonder een echte screenreadercontrole. Draai NVDA (Windows) of VoiceOver (macOS: Cmd+F5) en loop de flow door. Een axe-scan vindt B5 en B6, maar mist B1, B3, B7 en B8 volledig — die gaan over gedrag in de tijd, niet over de DOM op één moment.
 
@@ -55,6 +55,32 @@ in wat hij aan het lezen is.
 
 Geef de region ook een toegankelijke naam, bijvoorbeeld via `aria-label="Gesprek"`.
 
+VOORKOM GESTOTTER TIJDENS STREAMEN
+De tekst van een antwoord komt token voor token binnen — zie de aparte tak in
+`sanitizeMessageText` (regel 113-115) voor "tijdens streaming is de sluit-tag nog
+niet aangekomen". Elk fragment veroorzaakt een re-render. Zonder maatregel gaat de
+live region mogelijk bij élk fragment af: een stroom halve zinnen in plaats van
+één antwoord.
+
+Zet daarom `aria-busy="true"` op de live region zolang `isStreaming` waar is, en
+zet hem op `false` zodra het streamen klaar is. Dat vertelt hulpsoftware om
+aankondigingen vast te houden tot het bericht compleet is.
+
+Drie voorwaarden:
+1. Zet `aria-busy` ALLEEN op de berichtenlog, nooit op het `role="status"`-element
+   uit bevinding B2 — daar zou het juist de laadmelding onderdrukken.
+2. Zorg dat `aria-busy` gegarandeerd terugklapt naar `false`, ook op foutpaden.
+   Blijft hij op `true` hangen, dan is de live region PERMANENT stil — aanzienlijk
+   erger dan het gestotter dat je oploste. Leid hem af van `isStreaming` in plaats
+   van hem apart bij te houden, zodat er geen tweede bron van waarheid ontstaat.
+3. Behandel dit als progressive enhancement. NVDA en JAWS honoreren `aria-busy`
+   redelijk; VoiceOver is er historisch slordiger in. Wordt het genegeerd, dan val
+   je terug op het gestotter — niet op stilte. Verifieer per schermlezer.
+
+Tijdens het streamen is de log dus stil. Dat gat wordt gevuld door de statusmelding
+uit bevinding B2 ("PostNL-assistent is bezig met antwoorden"). B1 en B2 vormen samen
+één ontwerp: B1 onderdrukt de ruis, B2 dekt de stilte af. Voer ze in die volgorde uit.
+
 CONSTRAINTS
 - Importeer NOOIT uit `src/app/components/ui/` — dat zijn legacy shadcn-componenten
   die volgens `guidelines/Guidelines.md` verboden zijn in dit project.
@@ -63,9 +89,14 @@ CONSTRAINTS
 
 VERIFICATIE
 Start de app, stuur een bericht en luister met VoiceOver of NVDA of het antwoord
-wordt voorgelezen zonder dat je ernaartoe navigeert. Controleer dat het voorlezen
-niet halverwege opnieuw begint bij elk streaming-fragment; is dat wel zo, overweeg
-dan de live region alleen het voltooide bericht te laten bevatten.
+wordt voorgelezen zonder dat je ernaartoe navigeert.
+
+Test daarna specifiek op het gestotter: stuur een bericht dat een lang antwoord
+oplevert en luister of je één samenhangend antwoord hoort, of een stroom halve
+zinnen. Doe dit met minstens twee schermlezers — `aria-busy` wordt niet overal
+gelijk ondersteund. Werkt het in geen enkele, overweeg dan de live region pas te
+vullen zodra het bericht compleet is, in plaats van hem tijdens het streamen mee
+te laten groeien.
 ```
 
 ---
@@ -102,6 +133,16 @@ OPDRACHT
 Let op dat het `role="status"`-element permanent in de DOM staat en dat alleen de
 tekst erbinnen verandert. Een status-element dat mount en unmount wordt vaak
 gemist.
+
+SAMENHANG MET B1
+Als bevinding B1 al is uitgevoerd, staat de berichtenlog tijdens het streamen op
+`aria-busy="true"` en is hij dus stil — bewust, om te voorkomen dat elk
+binnenkomend tekstfragment apart wordt voorgelezen. Deze statusmelding is wat dat
+gat opvult. B1 onderdrukt de ruis, B2 dekt de stilte af; los van elkaar werkt geen
+van beide goed.
+
+Zet `aria-busy` NIET op dit `role="status"`-element — dat zou juist de laadmelding
+onderdrukken.
 
 CONSTRAINTS
 - Importeer NOOIT uit `src/app/components/ui/` (legacy shadcn, verboden).
